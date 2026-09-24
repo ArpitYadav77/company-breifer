@@ -1,4 +1,15 @@
 node_modules/
 .env
+apps/**/.env
 credentials.json
 *.log
+
+# python / new stack
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+apps/web/.next/
+apps/web/node_modules/
