@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
-from app.models import Company, Fact, HiringStage, InterviewTopic, Source
+from app.models import Company, Fact, HiringStage, InterviewTopic, ResearchRun, Source
 from app.services.research import create_company, execute_research
 
 router = APIRouter()
@@ -59,6 +59,14 @@ async def get_company(company_id: str, session: AsyncSession = Depends(get_sessi
     topics = (
         await session.execute(select(InterviewTopic).where(InterviewTopic.company_id == company_id))
     ).scalars().all()
+    last_run = (
+        await session.execute(
+            select(ResearchRun)
+            .where(ResearchRun.company_id == company_id)
+            .order_by(ResearchRun.started_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
 
     return {
         "company": c.model_dump(),
@@ -74,6 +82,7 @@ async def get_company(company_id: str, session: AsyncSession = Depends(get_sessi
         ],
         "hiring_stages": [s.name for s in stages],
         "interview_topics": [{"category": t.category, "topic": t.topic} for t in topics],
+        "missing": last_run.missing_fields if last_run else None,
     }
 
 

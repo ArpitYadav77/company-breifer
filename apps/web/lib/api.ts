@@ -11,11 +11,40 @@ export type Company = {
   hq_note: string | null;
   website: string | null;
   research_status: string;
+  research_updated_at: string | null;
   last_detected_at: string;
+};
+
+export type Fact = {
+  field: string;
+  value: string;
+  confidence: number;
+  status: "verified" | "unverified" | "conflicting";
+  source: string | null;
+};
+
+export type CompanyDetail = {
+  company: Company;
+  facts: Fact[];
+  hiring_stages: string[];
+  interview_topics: { category: string; topic: string }[];
+  missing: string | null;
 };
 
 export async function fetchCompanies(): Promise<{ companies: Company[] }> {
   const res = await fetch(`${API}/api/companies`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load companies");
+  return res.json();
+}
+
+export async function fetchCompany(id: string): Promise<CompanyDetail> {
+  const res = await fetch(`${API}/api/companies/${id}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load company");
+  return res.json();
+}
+
+export async function refreshResearch(id: string): Promise<unknown> {
+  const res = await fetch(`${API}/api/companies/${id}/research?sync=true`, { method: "POST" });
+  if (!res.ok) throw new Error("Research failed");
   return res.json();
 }
