@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchCompanies } from "@/lib/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchCompanies, fetchStatus, syncGmail } from "@/lib/api";
 import { CompanyDrawer } from "@/components/CompanyDrawer";
 
 const statusChip: Record<string, string> = {
@@ -14,14 +14,42 @@ const statusChip: Record<string, string> = {
 };
 
 export default function Dashboard() {
+  const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({ queryKey: ["companies"], queryFn: fetchCompanies });
+  const { data: status } = useQuery({ queryKey: ["status"], queryFn: fetchStatus });
   const [selected, setSelected] = useState<string | null>(null);
+  const [note, setNote] = useState("");
+
+  const sync = useMutation({
+    mutationFn: syncGmail,
+    onSuccess: (r) => {
+      setNote(
+        r.ok
+          ? `Scanned ${r.scanned}, new ${r.new_companies}, researched ${r.researched}, review ${r.needs_review}`
+          : `Sync: ${r.reason ?? "failed"}`
+      );
+      qc.invalidateQueries({ queryKey: ["companies"] });
+    },
+  });
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-8">
-      <header className="mb-8">
-        <h1 className="text-xl font-semibold tracking-tight">RecruitSage</h1>
-        <p className="text-sm text-ink-300">Company Intelligence</p>
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">RecruitSage</h1>
+          <p className="text-sm text-ink-300">Company Intelligence</p>
+        </div>
+        <div className="text-right">
+          <button
+            onClick={() => sync.mutate()}
+            disabled={sync.isPending || !status?.gmail_configured}
+            title={status?.gmail_configured ? "" : "Add Gmail credentials to apps/api/.env"}
+            className="rounded-lg bg-teal-300 px-4 py-2 text-sm font-semibold text-ink-900 disabled:opacity-50"
+          >
+            {sync.isPending ? "Syncing…" : "Sync Gmail"}
+          </button>
+          <div className="mt-1 text-xs text-ink-300">{note}</div>
+        </div>
       </header>
 
       {isLoading && <p className="text-ink-300">Loading…</p>}

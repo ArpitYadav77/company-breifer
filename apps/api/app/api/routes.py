@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_session
 from app.models import Company, CompanyBrief, Fact, HiringStage, InterviewTopic, ResearchRun, Source
 from app.services.chat import answer_question
+from app.services.gmail_ingest import is_configured, sync_gmail
 from app.services.research import create_company, execute_research
 
 router = APIRouter()
@@ -17,6 +18,17 @@ router = APIRouter()
 @router.get("/health")
 async def health() -> dict:
     return {"status": "ok"}
+
+
+@router.get("/api/status")
+async def status() -> dict:
+    return {"gmail_configured": is_configured()}
+
+
+@router.post("/api/sync")
+async def sync() -> dict:
+    """Poll Gmail for new RecruitSage companies and research them (local dev)."""
+    return await sync_gmail()
 
 
 @router.get("/api/companies")

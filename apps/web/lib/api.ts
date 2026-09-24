@@ -71,6 +71,26 @@ export async function fetchCompanies(): Promise<{ companies: Company[] }> {
   return res.json();
 }
 
+export async function fetchStatus(): Promise<{ gmail_configured: boolean }> {
+  const res = await fetch(`${API}/api/status`, { cache: "no-store" });
+  if (!res.ok) throw new Error("status failed");
+  return res.json();
+}
+
+export type SyncResult = {
+  ok: boolean;
+  reason?: string;
+  scanned?: number;
+  new_companies?: number;
+  needs_review?: number;
+  researched?: number;
+};
+
+export async function syncGmail(): Promise<SyncResult> {
+  const res = await fetch(`${API}/api/sync`, { method: "POST" });
+  return res.json();
+}
+
 export async function fetchCompany(id: string): Promise<CompanyDetail> {
   const res = await fetch(`${API}/api/companies/${id}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load company");

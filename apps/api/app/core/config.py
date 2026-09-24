@@ -27,7 +27,10 @@ class Settings(BaseSettings):
     # Gmail (encrypted refresh tokens live in DB; these identify the OAuth app)
     google_client_id: str | None = None
     google_client_secret: str | None = None
-    gmail_pubsub_topic: str | None = None  # projects/<proj>/topics/<topic>
+    gmail_refresh_token: str | None = None  # local single-user dev (prod: per-user, encrypted in DB)
+    recruitsage_gmail_query: str = "from:updates.recruitsage@thapar.edu"
+    gmail_initial_lookback_days: int = 30
+    gmail_pubsub_topic: str | None = None  # projects/<proj>/topics/<topic> (push, post-deploy)
     token_encryption_key: str = Field(default="", description="Fernet key for token-at-rest encryption")
 
     # Telegram (webhook mode)
