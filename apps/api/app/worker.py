@@ -14,15 +14,14 @@ from __future__ import annotations
 from arq import cron
 from arq.connections import RedisSettings
 
-from app.agents.research_graph import research_graph
 from app.core.config import get_settings
+from app.services.research import execute_research
 
 settings = get_settings()
 
 
 async def run_research(ctx, company_id: str) -> None:
-    # TODO: load company, run the graph, persist events + facts + ResearchRun.
-    await research_graph.ainvoke({"company_id": company_id})
+    await execute_research(company_id)
 
 
 async def ingest_gmail_delta(ctx, user_id: str) -> None:

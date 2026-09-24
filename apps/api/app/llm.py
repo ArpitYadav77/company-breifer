@@ -34,7 +34,7 @@ async def complete(
     route: Route,
     system: str,
     user: str,
-    response_schema: dict[str, Any] | None = None,
+    json_mode: bool = False,
     feature: str | None = None,
     prompt_version: str | None = None,
 ) -> tuple[str, dict[str, Any]]:
@@ -44,8 +44,8 @@ async def complete(
         "model": model,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
     }
-    if response_schema is not None:
-        kwargs["response_format"] = {"type": "json_schema", "json_schema": response_schema}
+    if json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
 
     t0 = time.perf_counter()
     resp = await litellm.acompletion(**kwargs)
