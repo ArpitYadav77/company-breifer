@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Server-side proxy target. In Docker, reach the API by its compose service name
+// (`api`), not localhost — each container has its own localhost.
+const API = process.env.API_URL || "http://localhost:8000";
 
 const nextConfig = {
   async rewrites() {

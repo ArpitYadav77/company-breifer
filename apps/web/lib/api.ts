@@ -1,4 +1,8 @@
-// Typed API client. Same-origin (Next rewrites proxy /api to FastAPI).
+// Typed API client. The browser calls the API directly (Docker maps it to
+// localhost:8000; the API allows CORS from the web origin). This avoids the
+// container-internal proxy pitfall (a container's own localhost != the api container).
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export type Company = {
   id: string;
   name: string;
@@ -11,7 +15,7 @@ export type Company = {
 };
 
 export async function fetchCompanies(): Promise<{ companies: Company[] }> {
-  const res = await fetch("/api/companies", { cache: "no-store" });
+  const res = await fetch(`${API}/api/companies`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load companies");
   return res.json();
 }

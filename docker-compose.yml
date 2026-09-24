@@ -49,6 +49,9 @@ services:
   web:
     build: ./apps/web
     env_file: ./apps/web/.env
+    environment:
+      # Next proxies /api/* to the API container by its service name (server-side).
+      API_URL: http://api:8000
     depends_on: [api]
     ports: ["3000:3000"]
     command: npm run dev

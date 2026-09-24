@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="RecruitSage API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.public_base_url],
+    allow_origins=["*"],  # dev: allow the web origin (tighten for prod)
     allow_methods=["*"],
     allow_headers=["*"],
 )
