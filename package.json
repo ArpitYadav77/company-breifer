@@ -1,0 +1,33 @@
+{
+  "name": "company-brief-agent",
+  "version": "1.0.0",
+  "description": "Generates a 1-page interview-prep brief for a company by searching the web and synthesizing results with an LLM.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "interview",
+    "brief",
+    "llm",
+    "gemini",
+    "serper"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^2.22.0",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "googleapis": "^181.0.0",
+    "mongodb": "^7.6.0",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
