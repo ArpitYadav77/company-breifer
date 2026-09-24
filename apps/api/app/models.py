@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from enum import Enum
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Column, Index, Text
+from sqlalchemy import JSON, Column, Index, Text
 from sqlmodel import Field, SQLModel
 
 EMBED_DIM = 768
@@ -140,6 +140,15 @@ class InterviewTopic(SQLModel, table=True):
     category: str  # dsa | cs_fundamentals | sql | projects | behavioral
     topic: str
     source_id: str | None = Field(default=None, foreign_key="sources.id")
+
+
+class CompanyBrief(SQLModel, table=True):
+    """Richer, semi-structured brief fields (salary, career path, Glassdoor summary,
+    LinkedIn/alumni deep-links). Kept as JSON so the shape can evolve without migrations."""
+    __tablename__ = "company_briefs"
+    company_id: str = Field(foreign_key="companies.id", primary_key=True)
+    data: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    updated_at: datetime = Field(default_factory=_now)
 
 
 # ---------- email / applications ----------

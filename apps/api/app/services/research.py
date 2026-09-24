@@ -13,8 +13,11 @@ from sqlalchemy import delete, select
 from app import llm
 from app.agents.research_graph import research_graph
 from app.db import SessionLocal
+from urllib.parse import quote_plus
+
 from app.models import (
     Company,
+    CompanyBrief,
     Fact,
     FactStatus,
     HiringStage,
@@ -25,6 +28,21 @@ from app.models import (
     User,
     Chunk,
 )
+
+_THAPAR = "Thapar Institute of Engineering and Technology"
+
+
+def build_links(name: str) -> dict:
+    """Deterministic, ToS-safe deep-links (no scraping). Mirrors the v1 app."""
+    q = quote_plus(name)
+    return {
+        "linkedin_company_url": f"https://www.linkedin.com/search/results/companies/?keywords={q}",
+        "alumni_search_url": (
+            "https://www.linkedin.com/search/results/people/?keywords="
+            f"{quote_plus(name + ' ' + _THAPAR)}&origin=GLOBAL_SEARCH_HEADER"
+        ),
+        "glassdoor_url": f"https://www.glassdoor.com/Search/results.htm?keyword={q}",
+    }
 from app.services.normalize import normalize_company_name
 from app.services.search import content_hash, domain_of
 
@@ -130,6 +148,33 @@ async def execute_research(company_id: str) -> dict:
         company.hq_note = ex.get("hq_note") or company.hq_note
         company.founded_year = ex.get("founded_year") or company.founded_year
         company.website = ex.get("website") or company.website
+
+        # Rich brief (salary, career path, Glassdoor summary, deterministic deep-links).
+        links = build_links(company.name)
+        rating = next((f.get("value") for f in facts if f.get("field") == "glassdoor_rating"), None)
+        brief_data = {
+            "salary": ex.get("salary"),
+            "career_growth": ex.get("career_growth") or [],
+            "glassdoor": {
+                "rating": rating,
+                "summary": ex.get("glassdoor_summary"),
+                "positives": ex.get("glassdoor_positives") or [],
+                "negatives": ex.get("glassdoor_negatives") or [],
+                "url": links["glassdoor_url"],
+            },
+            "linkedin": {
+                "company_url": links["linkedin_company_url"],
+                "alumni_search_url": links["alumni_search_url"],
+                "followers": None,  # never scraped
+                "alumni_count": None,  # link-out only, honest
+            },
+        }
+        existing_brief = await session.get(CompanyBrief, company_id)
+        if existing_brief:
+            existing_brief.data = brief_data
+            existing_brief.updated_at = datetime.now(timezone.utc)
+        else:
+            session.add(CompanyBrief(company_id=company_id, data=brief_data))
 
         # Chunks for RAG (best-effort embeddings).
         texts = [state.get("brief_text", "")] + [r.get("content", "")[:1500] for r in results[:8]]

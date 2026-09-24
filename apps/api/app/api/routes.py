@@ -7,7 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
-from app.models import Company, Fact, HiringStage, InterviewTopic, ResearchRun, Source
+from app.models import Company, CompanyBrief, Fact, HiringStage, InterviewTopic, ResearchRun, Source
+from app.services.chat import answer_question
 from app.services.research import create_company, execute_research
 
 router = APIRouter()
@@ -67,9 +68,11 @@ async def get_company(company_id: str, session: AsyncSession = Depends(get_sessi
             .limit(1)
         )
     ).scalar_one_or_none()
+    brief = await session.get(CompanyBrief, company_id)
 
     return {
         "company": c.model_dump(),
+        "brief": brief.data if brief else None,
         "facts": [
             {
                 "field": f.field,
@@ -93,6 +96,16 @@ async def run_research(company_id: str, request: Request, sync: bool = False) ->
         return await execute_research(company_id)
     await request.app.state.arq.enqueue_job("run_research", company_id)
     return {"status": "queued", "company_id": company_id}
+
+
+class Ask(BaseModel):
+    question: str
+
+
+@router.post("/api/companies/{company_id}/chat")
+async def chat(company_id: str, body: Ask) -> dict:
+    """Ask RecruitSage: grounded, cited answer from this company's stored research."""
+    return await answer_question(company_id, body.question)
 
 
 # ---------- webhooks (stubs; Phase 2 continues) ----------

@@ -23,13 +23,47 @@ export type Fact = {
   source: string | null;
 };
 
+export type Brief = {
+  salary: { entry_level?: { range?: string; source?: string; confidence?: string } } | null;
+  career_growth: { stage: string; title: string }[];
+  glassdoor: {
+    rating: string | null;
+    summary: string | null;
+    positives: string[];
+    negatives: string[];
+    url: string;
+  };
+  linkedin: {
+    company_url: string;
+    alumni_search_url: string;
+    followers: number | null;
+    alumni_count: number | null;
+  };
+} | null;
+
 export type CompanyDetail = {
   company: Company;
+  brief: Brief;
   facts: Fact[];
   hiring_stages: string[];
   interview_topics: { category: string; topic: string }[];
   missing: string | null;
 };
+
+export type ChatAnswer = {
+  answer: string;
+  sources: { n: number; url: string | null; title: string | null }[];
+};
+
+export async function askQuestion(id: string, question: string): Promise<ChatAnswer> {
+  const res = await fetch(`${API}/api/companies/${id}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok) throw new Error("Chat failed");
+  return res.json();
+}
 
 export async function fetchCompanies(): Promise<{ companies: Company[] }> {
   const res = await fetch(`${API}/api/companies`, { cache: "no-store" });
