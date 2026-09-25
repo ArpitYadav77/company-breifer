@@ -1,6 +1,5 @@
-# Local dev stack for RecruitSage v2 (Next.js + FastAPI + Postgres/pgvector + Redis).
-# The existing Node app at the repo root is unaffected; this brings up the new stack.
-#   docker compose up --build
+# RecruitSage v2 local stack. `make up` builds and starts everything.
+# The v1 Node app at the repo root is unaffected.
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -16,7 +15,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U recruitsage"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 12
 
   redis:
     image: redis:7-alpine
@@ -25,7 +24,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 12
 
   api:
     build: ./apps/api
@@ -36,6 +35,13 @@ services:
     ports: ["8000:8000"]
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes: ["./apps/api:/app"]
+    healthcheck:
+      # python-based (no curl in slim image); api auto-migrates on startup (create_all)
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8000/health',timeout=3).status==200 else sys.exit(1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
 
   worker:
     build: ./apps/api
@@ -45,17 +51,30 @@ services:
       redis: { condition: service_healthy }
     command: arq app.worker.WorkerSettings
     volumes: ["./apps/api:/app"]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('redis',6379),3)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
 
   web:
     build: ./apps/web
     env_file: ./apps/web/.env
     environment:
-      # Next proxies /api/* to the API container by its service name (server-side).
+      # Server-side code reaches the api by service name; the browser uses NEXT_PUBLIC_API_URL.
       API_URL: http://api:8000
-    depends_on: [api]
+    depends_on:
+      api: { condition: service_healthy }
     ports: ["3000:3000"]
     command: npm run dev
     volumes: ["./apps/web:/app", "/app/node_modules"]
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(()=>process.exit(0)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 40s
 
 volumes:
   pgdata:
