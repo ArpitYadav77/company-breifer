@@ -7,8 +7,19 @@
 > VERIFIED (actually run, with the proving command).
 
 ## Current step
-Phase A hardening committed. **Next action (user's machine):** `make up` (or `docker compose up -d`),
-then `make verify` (or `python scripts/verify.py`); paste failures. Agent continues Phase B–E code meanwhile.
+Phase A VERIFIED on host (2026-09-25). Stack healthy, research + chat working end-to-end.
+Next: run full Gmail sync (long — researches all companies), then Phase B/C/E.
+
+## Verified this session (evidence)
+- `docker compose ps` → api/db/redis/web/worker all **(healthy)**; healthchecks + ordered startup work.
+- `GET /health` → `{"status":"ok"}`; `GET /api/status` → `gmail_configured: True`.
+- `POST /research?sync=true` (Infosys) → `status: researched, facts: 5, sources: 25`.
+- `POST /chat` → grounded answer with inline [n] citations resolving to real URLs+titles
+  (prepinsta, finalroundai, geeksforgeeks).
+- Fixes that unblocked it: LLM_CHEAP_MODEL had a newline-split value in .env; embedding
+  model gemini/text-embedding-004 → gemini/gemini-embedding-001 @ dims=768; strong model
+  gemini-2.5-pro (retired) → gemini-2.5-flash; chunks now carry source_id.
+- `GET http://localhost:3000` → 200.
 
 ## Phase checklist
 ### Phase A — make it run
@@ -18,7 +29,8 @@ then `make verify` (or `python scripts/verify.py`); paste failures. Agent contin
 - [x] BUILT: CORS allows web origin (dev: `*`)
 - [x] BUILT: auto-migrate on api startup (`init_db`/`create_all`) — Alembic deferred to Phase F (see DECISIONS)
 - [x] BUILT: `make up/down/logs/ps/verify` + `scripts/verify.py` (stdlib, cross-platform)
-- [ ] VERIFIED: `make verify` passes end-to-end on host  ← **pending user run**
+- [x] VERIFIED: stack healthy + research + chat end-to-end on host (2026-09-25; see evidence above).
+      Full `make verify` incl. Gmail sync pending (sync researches all companies — long-running).
 
 ### Phase B — consolidate v1 into v2
 - [x] BUILT: Gmail polling ingestion (`/api/sync`, reuses existing readonly token)
