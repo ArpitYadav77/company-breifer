@@ -14,8 +14,8 @@ class Settings(BaseSettings):
 
     # LLM routing (LiteLLM model strings). Cheap model for classify/extract, strong for synth/chat.
     llm_cheap_model: str = "gemini/gemini-2.5-flash"
-    llm_strong_model: str = "gemini/gemini-2.5-pro"
-    embedding_model: str = "gemini/text-embedding-004"
+    llm_strong_model: str = "gemini/gemini-2.5-flash"  # 2.5-pro retired; 3.1-pro-preview rate-limits on free tier
+    embedding_model: str = "gemini/gemini-embedding-001"  # text-embedding-004 not available on AI Studio key
     gemini_api_key: str | None = None
     openai_api_key: str | None = None
 

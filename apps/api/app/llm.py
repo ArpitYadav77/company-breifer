@@ -71,6 +71,10 @@ async def complete(
     return text, meta
 
 
+EMBED_DIM = 768  # must match models.Chunk.embedding Vector(768)
+
+
 async def embed(texts: list[str]) -> list[list[float]]:
-    resp = await litellm.aembedding(model=settings.embedding_model, input=texts)
+    # gemini-embedding-001 defaults to 3072 dims; request 768 to match the column.
+    resp = await litellm.aembedding(model=settings.embedding_model, input=texts, dimensions=EMBED_DIM)
     return [d["embedding"] for d in resp["data"]]

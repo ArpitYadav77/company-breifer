@@ -176,16 +176,22 @@ async def execute_research(company_id: str) -> dict:
         else:
             session.add(CompanyBrief(company_id=company_id, data=brief_data))
 
-        # Chunks for RAG (best-effort embeddings).
-        texts = [state.get("brief_text", "")] + [r.get("content", "")[:1500] for r in results[:8]]
-        texts = [t for t in texts if t.strip()]
+        # Chunks for RAG (best-effort embeddings), each linked to its source for citations.
+        chunk_items: list[tuple[str, str | None]] = []
+        if state.get("brief_text", "").strip():
+            chunk_items.append((state["brief_text"], None))
+        for r in results[:8]:
+            body = (r.get("content", "") or "")[:1500]
+            if body.strip():
+                chunk_items.append((body, url_to_source.get(r.get("url"))))
+        texts = [t for t, _ in chunk_items]
         try:
             vectors = await llm.embed(texts) if texts else []
-            for t, v in zip(texts, vectors):
-                session.add(Chunk(company_id=company_id, text=t, embedding=v))
+            for (t, sid), v in zip(chunk_items, vectors):
+                session.add(Chunk(company_id=company_id, text=t, source_id=sid, embedding=v))
         except Exception:
-            for t in texts:
-                session.add(Chunk(company_id=company_id, text=t))
+            for t, sid in chunk_items:
+                session.add(Chunk(company_id=company_id, text=t, source_id=sid))
 
         # Final status.
         missing = state.get("missing", [])
