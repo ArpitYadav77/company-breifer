@@ -23,6 +23,7 @@ dependencies = [
   "google-auth-oauthlib>=1.2",
   "cryptography>=43.0",
   "python-multipart>=0.0.9",
+  "mcp>=1.2",
 ]
 
 [project.optional-dependencies]

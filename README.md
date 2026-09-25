@@ -66,4 +66,26 @@ fallback. Processing is idempotent on `messageId`.
 - 🚧 Phase 2 (this scaffold): monorepo, provenance schema, LangGraph skeleton, docker-compose, CI.
 - ⏳ Phases 3–7: RAG chat + tools, UI (globe/graph/motion), evals + cost dashboard, resume/mock/MCP, polish.
 
+## MCP server
+RecruitSage exposes its intelligence DB to any MCP client (e.g. Claude Desktop) via a
+stdio server with read-only tools: `list_companies`, `get_company_brief`,
+`search_knowledge`, `get_upcoming_interviews`.
+
+```bash
+cd apps/api && python -m app.mcp_server   # uses the same DATABASE_URL as the API
+```
+Claude Desktop (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "recruitsage": {
+      "command": "python",
+      "args": ["-m", "app.mcp_server"],
+      "cwd": "<repo>/apps/api",
+      "env": { "DATABASE_URL": "postgresql+asyncpg://recruitsage:recruitsage@localhost:5432/recruitsage" }
+    }
+  }
+}
+```
+
 See `docs/adr/` for decisions (model routing, hybrid retrieval, Gmail push vs poll).

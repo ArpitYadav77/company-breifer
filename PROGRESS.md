@@ -38,7 +38,7 @@ then `make verify` (or `python scripts/verify.py`); paste failures. Agent contin
 ### Phase D — AI features
 - [ ] Resume↔JD fit (local PDF), mock interview (Web Speech), prep planner (.ics), readiness score
 - [ ] chat tools (search_company_knowledge, web_search_fresh, compare_companies, timeline, prep_plan, draft_email, text_to_sql read-only)
-- [ ] MCP server (stdio+HTTP) + README config + tests
+- [x] BUILT: MCP server (stdio) — list_companies/get_company_brief/search_knowledge/get_upcoming_interviews + README config (test + HTTP transport pending)
 
 ### Phase E — observability + evals (no external accounts)
 - [ ] llm_calls logging (feature/model/prompt_version/tokens/cost/latency/trace); /observability cost dashboard; budget caps
