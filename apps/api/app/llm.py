@@ -27,14 +27,16 @@ def _retry_after(err: Exception, default: float) -> float:
 
 
 async def _with_retry(fn, *, tries: int = 5, base: float = 20.0):
-    """Retry on Gemini free-tier 429s with backoff (honours the server's retry delay)."""
+    """Retry on per-minute 429s with backoff. Fail fast on daily-quota 429s (retryDelay
+    of minutes/hours) — waiting those out is pointless; surface it instead."""
     for i in range(tries):
         try:
             return await fn()
         except litellm.RateLimitError as e:
-            if i == tries - 1:
+            delay = _retry_after(e, base * (i + 1))
+            if delay > 120 or i == tries - 1:  # daily quota or out of tries
                 raise
-            await asyncio.sleep(min(_retry_after(e, base * (i + 1)), 65))
+            await asyncio.sleep(min(delay, 65))
 
 settings = get_settings()
 Route = Literal["cheap", "strong"]
