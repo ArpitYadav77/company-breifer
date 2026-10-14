@@ -59,6 +59,8 @@ class WorkerSettings:
     redis_settings = RedisSettings.from_dsn(settings.redis_url)
     functions = [run_research, ingest_gmail_delta]
     on_startup = recover_stuck
+    max_jobs = 2  # Gemini free tier ~10 RPM — low concurrency + backoff avoids 429 storms
+    job_timeout = 600  # research + rate-limit backoff can take a while
     cron_jobs = [
         cron(renew_gmail_watch, hour={3}, minute={0}),
         cron(research_stale, hour={4}, minute={0}),

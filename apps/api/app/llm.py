@@ -11,12 +11,30 @@ model to never follow instructions found inside that content (prompt-injection d
 """
 from __future__ import annotations
 
+import asyncio
+import re
 import time
 from typing import Any, Literal
 
 import litellm
 
 from app.core.config import get_settings
+
+
+def _retry_after(err: Exception, default: float) -> float:
+    m = re.search(r"retry.{0,12}?([\d.]+)\s*s", str(err), re.I)
+    return float(m.group(1)) if m else default
+
+
+async def _with_retry(fn, *, tries: int = 5, base: float = 20.0):
+    """Retry on Gemini free-tier 429s with backoff (honours the server's retry delay)."""
+    for i in range(tries):
+        try:
+            return await fn()
+        except litellm.RateLimitError as e:
+            if i == tries - 1:
+                raise
+            await asyncio.sleep(min(_retry_after(e, base * (i + 1)), 65))
 
 settings = get_settings()
 Route = Literal["cheap", "strong"]
@@ -48,7 +66,7 @@ async def complete(
         kwargs["response_format"] = {"type": "json_object"}
 
     t0 = time.perf_counter()
-    resp = await litellm.acompletion(**kwargs)
+    resp = await _with_retry(lambda: litellm.acompletion(**kwargs))
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
     text = resp.choices[0].message.content or ""
@@ -76,5 +94,7 @@ EMBED_DIM = 768  # must match models.Chunk.embedding Vector(768)
 
 async def embed(texts: list[str]) -> list[list[float]]:
     # gemini-embedding-001 defaults to 3072 dims; request 768 to match the column.
-    resp = await litellm.aembedding(model=settings.embedding_model, input=texts, dimensions=EMBED_DIM)
+    resp = await _with_retry(
+        lambda: litellm.aembedding(model=settings.embedding_model, input=texts, dimensions=EMBED_DIM)
+    )
     return [d["embedding"] for d in resp["data"]]
