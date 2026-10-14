@@ -19,7 +19,9 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
     ports: ["6379:6379"]
+    volumes: ["redisdata:/data"]  # persist the job queue across restarts
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -78,3 +80,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:

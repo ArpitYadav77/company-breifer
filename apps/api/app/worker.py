@@ -36,9 +36,29 @@ async def research_stale(ctx) -> None:
     ...  # TODO: find companies with stale facts and enqueue run_research
 
 
+async def recover_stuck(ctx) -> None:
+    """Re-enqueue any company left in 'researching' by a prior crash/shutdown."""
+    from sqlalchemy import select
+
+    from app.db import SessionLocal
+    from app.models import Company, ResearchStatus
+
+    async with SessionLocal() as s:
+        stuck = (
+            await s.execute(
+                select(Company).where(Company.research_status == ResearchStatus.researching)
+            )
+        ).scalars().all()
+    for c in stuck:
+        await ctx["redis"].enqueue_job("run_research", c.id)
+    if stuck:
+        print(f"[worker] recovered {len(stuck)} stuck 'researching' companies")
+
+
 class WorkerSettings:
     redis_settings = RedisSettings.from_dsn(settings.redis_url)
     functions = [run_research, ingest_gmail_delta]
+    on_startup = recover_stuck
     cron_jobs = [
         cron(renew_gmail_watch, hour={3}, minute={0}),
         cron(research_stale, hour={4}, minute={0}),
