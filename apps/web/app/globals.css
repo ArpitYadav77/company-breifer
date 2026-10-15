@@ -4,3 +4,8 @@
 
 :root { color-scheme: dark; }
 body { @apply bg-ink-900 text-ink-50 font-sans antialiased; }
+
+/* short fade/stagger when filters change */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.2s ease-out; }
+@media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } }
