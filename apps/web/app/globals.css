@@ -2,10 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
-body { @apply bg-ink-900 text-ink-50 font-sans antialiased; }
+/* ---- Dark theme (default) ---- */
+:root {
+  color-scheme: dark;
+  --bg: 20 22 23;
+  --surface: 31 35 36;
+  --surface2: 42 46 48;
+  --content: 237 239 240;
+  --muted: 155 163 168;
+  --line: 237 239 240; /* used with low alpha */
+}
+
+/* ---- Light theme ---- */
+html.light {
+  color-scheme: light;
+  --bg: 244 246 249;
+  --surface: 255 255 255;
+  --surface2: 237 241 245;
+  --content: 23 27 30;
+  --muted: 88 97 102;
+  --line: 17 22 28;
+}
+
+body {
+  @apply font-sans antialiased;
+  background: rgb(var(--bg));
+  color: rgb(var(--content));
+}
 
 /* short fade/stagger when filters change */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 .fade-in { animation: fadeIn 0.2s ease-out; }
 @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } }
+
+/* ---- Theme-aware status colors (used for status + fact badges) ---- */
+.b-green  { background: rgb(16 185 129 / .16); color: #34d399; --tw-ring-color: rgb(16 185 129 / .30); }
+.b-amber  { background: rgb(245 158 11 / .16); color: #fbbf24; --tw-ring-color: rgb(245 158 11 / .30); }
+.b-rose   { background: rgb(244 63 94 / .16);  color: #fb7185; --tw-ring-color: rgb(244 63 94 / .30); }
+.b-teal   { background: rgb(45 212 191 / .16); color: #5eead4; --tw-ring-color: rgb(45 212 191 / .30); }
+.b-slate  { background: rgb(148 163 184 / .16); color: #cbd5e1; --tw-ring-color: rgb(148 163 184 / .28); }
+html.light .b-green { background: rgb(16 185 129 / .12); color: #047857; }
+html.light .b-amber { background: rgb(245 158 11 / .15); color: #b45309; }
+html.light .b-rose  { background: rgb(244 63 94 / .12);  color: #be123c; }
+html.light .b-teal  { background: rgb(13 148 136 / .12); color: #0f766e; }
+html.light .b-slate { background: rgb(100 116 139 / .14); color: #475569; }

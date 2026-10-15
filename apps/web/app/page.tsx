@@ -3,18 +3,19 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchCompanies, fetchStatus, syncGmail, type Company } from "@/lib/api";
 import { CompanyDrawer } from "@/components/CompanyDrawer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 /* ------- status styling (pill + dot + sort rank; researched = most complete) ------- */
 const STATUS: Record<string, { label: string; pill: string; dot: string; rank: number }> = {
-  researched:      { label: "researched",      pill: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/20", dot: "bg-emerald-400", rank: 0 },
-  partial:         { label: "partial",         pill: "bg-amber-500/15 text-amber-300 ring-amber-500/20",       dot: "bg-amber-400",   rank: 1 },
-  needs_attention: { label: "needs attention", pill: "bg-rose-500/15 text-rose-300 ring-rose-500/20",          dot: "bg-rose-400",    rank: 2 },
-  researching:     { label: "researching",     pill: "bg-teal-400/15 text-teal-200 ring-teal-400/20",          dot: "bg-teal-300",    rank: 3 },
-  pending:         { label: "pending",          pill: "bg-white/5 text-ink-300 ring-white/10",                 dot: "bg-slate-400",   rank: 4 },
-  failed:          { label: "failed",           pill: "bg-rose-500/15 text-rose-300 ring-rose-500/20",         dot: "bg-rose-400",    rank: 5 },
+  researched:      { label: "researched",      pill: "b-green", dot: "bg-emerald-400", rank: 0 },
+  partial:         { label: "partial",         pill: "b-amber", dot: "bg-amber-400",   rank: 1 },
+  needs_attention: { label: "needs attention", pill: "b-rose",  dot: "bg-rose-400",    rank: 2 },
+  researching:     { label: "researching",     pill: "b-teal",  dot: "bg-teal-300",    rank: 3 },
+  pending:         { label: "pending",          pill: "b-slate", dot: "bg-slate-400",   rank: 4 },
+  failed:          { label: "failed",           pill: "b-rose",  dot: "bg-rose-400",    rank: 5 },
 };
 const statusMeta = (s: string) =>
-  STATUS[s] ?? { label: s, pill: "bg-white/5 text-ink-300 ring-white/10", dot: "bg-slate-400", rank: 9 };
+  STATUS[s] ?? { label: s, pill: "b-slate", dot: "bg-slate-400", rank: 9 };
 
 /* ------- category keyword map — EDIT HERE to tune categorisation ------- */
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
@@ -107,18 +108,21 @@ export default function Dashboard() {
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">RecruitSage</h1>
-          <p className="mt-0.5 text-sm text-ink-300">Company intelligence for campus placements</p>
+          <p className="mt-0.5 text-sm text-muted">Company intelligence for campus placements</p>
         </div>
         <div className="text-right">
-          <button
-            onClick={() => sync.mutate()}
-            disabled={sync.isPending || !status?.gmail_configured}
-            title={status?.gmail_configured ? "" : "Add Gmail credentials to apps/api/.env"}
-            className="rounded-lg bg-teal-300 px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-teal-200 disabled:opacity-50"
-          >
-            {sync.isPending ? "Syncing…" : "Sync Gmail"}
-          </button>
-          {note && <div className="mt-1 max-w-[16rem] text-xs text-ink-300">{note}</div>}
+          <div className="flex items-center justify-end gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => sync.mutate()}
+              disabled={sync.isPending || !status?.gmail_configured}
+              title={status?.gmail_configured ? "" : "Add Gmail credentials to apps/api/.env"}
+              className="rounded-lg bg-teal-300 px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-teal-100 disabled:opacity-50"
+            >
+              {sync.isPending ? "Syncing…" : "Sync Gmail"}
+            </button>
+          </div>
+          {note && <div className="mt-1 max-w-[16rem] text-xs text-muted">{note}</div>}
         </div>
       </header>
 
@@ -127,7 +131,7 @@ export default function Dashboard() {
       {/* Summary bar */}
       {!isLoading && companies.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-          <span className="rounded-lg bg-white/[0.04] px-3 py-1.5 text-ink-100">
+          <span className="rounded-lg bg-surface px-3 py-1.5 text-content">
             <b>{companies.length}</b> companies
           </span>
           {Object.entries(statusCounts)
@@ -156,12 +160,12 @@ export default function Dashboard() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search companies…"
-            className="min-w-[12rem] flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm outline-none transition focus:border-teal-500/60"
+            className="min-w-[12rem] flex-1 rounded-lg border border-line/10 bg-surface px-3 py-2 text-sm outline-none transition focus:border-teal-500/60"
           />
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm outline-none focus:border-teal-500/60"
+            className="rounded-lg border border-line/10 bg-surface px-3 py-2 text-sm outline-none focus:border-teal-500/60"
           >
             <option value="az">A to Z</option>
             <option value="za">Z to A</option>
@@ -169,7 +173,7 @@ export default function Dashboard() {
           </select>
           <button
             onClick={() => setGrouped((v) => !v)}
-            className={`rounded-lg border px-3 py-2 text-sm transition ${grouped ? "border-teal-500/60 text-teal-200" : "border-white/10 text-ink-300 hover:text-ink-100"}`}
+            className={`rounded-lg border px-3 py-2 text-sm transition ${grouped ? "border-teal-500/60 text-teal-300" : "border-line/10 text-muted hover:text-content"}`}
           >
             Group by category
           </button>
@@ -187,7 +191,7 @@ export default function Dashboard() {
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`rounded-full px-3 py-1 text-xs transition ${active ? "bg-teal-300 font-semibold text-ink-900" : "bg-white/[0.04] text-ink-300 hover:text-ink-100"}`}
+                className={`rounded-full px-3 py-1 text-xs transition ${active ? "bg-teal-300 font-semibold text-ink-900" : "bg-surface text-muted hover:text-content"}`}
               >
                 {cat} <span className="opacity-70">{n}</span>
               </button>
@@ -200,19 +204,19 @@ export default function Dashboard() {
       {isLoading && (
         <div className="grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[112px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]" />
+            <div key={i} className="h-[112px] animate-pulse rounded-2xl border border-line/10 bg-surface" />
           ))}
         </div>
       )}
 
       {/* Content */}
       {!isLoading && companies.length === 0 && (
-        <p className="text-ink-300">No companies yet — run a Gmail sync to begin.</p>
+        <p className="text-muted">No companies yet — run a Gmail sync to begin.</p>
       )}
 
       {!isLoading && companies.length > 0 && visible.length === 0 && (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
-          <p className="text-ink-300">No companies match your filters</p>
+        <div className="rounded-2xl border border-line/10 bg-surface p-10 text-center">
+          <p className="text-muted">No companies match your filters</p>
           <button onClick={clearFilters} className="mt-3 rounded-lg bg-teal-300 px-4 py-2 text-sm font-semibold text-ink-900">
             Clear filters
           </button>
@@ -225,7 +229,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               {groups.map(([cat, list]) => (
                 <section key={cat}>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-300">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                     {cat} <span className="opacity-60">({list.length})</span>
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -253,7 +257,7 @@ function Card({ c, onOpen }: { c: Company; onOpen: (id: string) => void }) {
   return (
     <button
       onClick={() => onOpen(c.id)}
-      className="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-500/50 hover:shadow-lg hover:shadow-teal-500/5"
+      className="group rounded-2xl border border-line/10 bg-surface p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-500/50 hover:shadow-lg hover:shadow-teal-500/5"
     >
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-lg font-medium leading-tight">{c.name}</h2>
@@ -262,11 +266,11 @@ function Card({ c, onOpen }: { c: Company; onOpen: (id: string) => void }) {
           {m.label}
         </span>
       </div>
-      <p className="mt-1.5 text-sm text-ink-300">
-        {c.industry ? c.industry : <span className="italic text-ink-300/60">Industry not available yet</span>}
+      <p className="mt-1.5 text-sm text-muted">
+        {c.industry ? c.industry : <span className="italic text-muted opacity-70">Industry not available yet</span>}
         {c.hq_location ? ` · ${c.hq_location}` : ""}
       </p>
-      <span className="mt-3 inline-block text-sm font-medium text-teal-200 transition group-hover:translate-x-0.5">
+      <span className="mt-3 inline-block text-sm font-medium text-teal-300 transition group-hover:translate-x-0.5">
         Explore intelligence →
       </span>
     </button>

@@ -10,18 +10,18 @@ import {
 } from "@/lib/api";
 
 const statusChip: Record<string, string> = {
-  researched: "bg-olive-100/15 text-olive-50",
-  partial: "bg-plum-300/15 text-plum-100",
-  researching: "bg-teal-100/15 text-teal-100",
-  pending: "bg-teal-100/15 text-teal-100",
-  needs_attention: "bg-wine-500/15 text-wine-300",
-  failed: "bg-wine-500/15 text-wine-300",
+  researched: "b-green",
+  partial: "b-amber",
+  researching: "b-teal",
+  pending: "b-slate",
+  needs_attention: "b-rose",
+  failed: "b-rose",
 };
 
 const factChip: Record<Fact["status"], string> = {
-  verified: "bg-olive-100/15 text-olive-50",
-  unverified: "bg-white/5 text-ink-300",
-  conflicting: "bg-wine-500/20 text-wine-300",
+  verified: "b-green",
+  unverified: "b-slate",
+  conflicting: "b-rose",
 };
 
 function domain(url: string | null) {
@@ -35,13 +35,13 @@ function domain(url: string | null) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-6">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-300">{title}</h3>
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{title}</h3>
       {children}
     </section>
   );
 }
 
-const NA = <p className="text-sm italic text-ink-300">Not available from current sources.</p>;
+const NA = <p className="text-sm italic text-muted">Not available from current sources.</p>;
 
 export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const qc = useQueryClient();
@@ -81,26 +81,26 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
         }`}
       />
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-screen w-[min(560px,94vw)] flex-col border-l border-white/10 bg-ink-900 shadow-2xl transition-transform duration-300 ${
+        className={`fixed right-0 top-0 z-50 flex h-screen w-[min(560px,94vw)] flex-col border-l border-line/10 bg-bg shadow-2xl transition-transform duration-300 ${
           id ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {isLoading || !c ? (
-          <div className="p-6 text-ink-300">Loading…</div>
+          <div className="p-6 text-muted">Loading…</div>
         ) : (
           <>
-            <header className="flex items-start gap-3 border-b border-white/10 p-5">
+            <header className="flex items-start gap-3 border-b border-line/10 p-5">
               <div>
                 <h2 className="text-xl font-semibold tracking-tight">{c.name}</h2>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      statusChip[c.research_status] ?? "bg-white/5 text-ink-300"
+                      statusChip[c.research_status] ?? "b-slate"
                     }`}
                   >
                     {c.research_status}
                   </span>
-                  <span className="text-sm text-ink-300">
+                  <span className="text-sm text-muted">
                     {c.industry ?? "Industry pending"}
                     {c.hq_location ? ` · ${c.hq_location}` : ""}
                   </span>
@@ -108,7 +108,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
               </div>
               <button
                 onClick={onClose}
-                className="ml-auto rounded-lg border border-white/10 px-2.5 py-1 text-ink-300 hover:text-ink-50"
+                className="ml-auto rounded-lg border border-line/10 px-2.5 py-1 text-muted hover:text-content"
                 aria-label="Close"
               >
                 ✕
@@ -124,7 +124,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                     onChange={(e) => setQ(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && q.trim() && ask.mutate()}
                     placeholder="e.g. What's asked in the interview?"
-                    className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    className="flex-1 rounded-lg border border-line/10 bg-surface px-3 py-2 text-sm outline-none focus:border-teal-500"
                   />
                   <button
                     onClick={() => q.trim() && ask.mutate()}
@@ -135,10 +135,10 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                   </button>
                 </div>
                 {chat && (
-                  <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm">
+                  <div className="mt-3 rounded-xl border border-line/10 bg-surface p-3 text-sm">
                     <p className="whitespace-pre-wrap">{chat.answer}</p>
                     {chat.sources.filter((s) => s.url).length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2 border-t border-white/10 pt-2 text-xs">
+                      <div className="mt-2 flex flex-wrap gap-2 border-t border-line/10 pt-2 text-xs">
                         {chat.sources
                           .filter((s) => s.url)
                           .map((s) => (
@@ -147,7 +147,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                               href={s.url!}
                               target="_blank"
                               rel="noopener"
-                              className="text-teal-100 hover:underline"
+                              className="text-teal-300 hover:underline"
                             >
                               [{s.n}] {domain(s.url)}
                             </a>
@@ -159,7 +159,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
               </Section>
 
               {data?.missing && (
-                <div className="mb-4 rounded-xl border border-plum-700/40 bg-plum-900/40 p-3 text-sm text-plum-100">
+                <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-content">
                   <b>Why partial:</b> {data.missing}
                 </div>
               )}
@@ -168,9 +168,9 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                 {data && data.facts.length > 0 ? (
                   <ul className="space-y-2">
                     {data.facts.map((f, i) => (
-                      <li key={i} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                      <li key={i} className="rounded-xl border border-line/10 bg-surface p-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs uppercase tracking-wide text-ink-300">
+                          <span className="text-xs uppercase tracking-wide text-muted">
                             {f.field.replace(/_/g, " ")}
                           </span>
                           <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${factChip[f.status]}`}>
@@ -179,7 +179,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                         </div>
                         <div className="mt-1 text-sm">{f.value}</div>
                         {f.source && (
-                          <a href={f.source} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-teal-100 hover:underline">
+                          <a href={f.source} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-teal-300 hover:underline">
                             {domain(f.source)} ↗
                           </a>
                         )}
@@ -193,9 +193,9 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
 
               <Section title="Salary (fresher)">
                 {brief?.salary?.entry_level?.range ? (
-                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm">
+                  <div className="rounded-xl border border-line/10 bg-surface p-3 text-sm">
                     <div className="font-medium">{brief.salary.entry_level.range}</div>
-                    <div className="text-xs text-ink-300">
+                    <div className="text-xs text-muted">
                       {brief.salary.entry_level.source ?? "source n/a"} · confidence{" "}
                       {brief.salary.entry_level.confidence ?? "low"}
                     </div>
@@ -210,10 +210,10 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                   <ol className="space-y-1 text-sm">
                     {brief.career_growth.map((s, i) => (
                       <li key={i} className="border-l-2 border-teal-700 pl-3">
-                        <span className="text-ink-300">{s.stage}</span> — {s.title}
+                        <span className="text-muted">{s.stage}</span> — {s.title}
                       </li>
                     ))}
-                    <li className="pt-1 text-xs italic text-ink-300">Typical path based on public info — not guaranteed.</li>
+                    <li className="pt-1 text-xs italic text-muted">Typical path based on public info — not guaranteed.</li>
                   </ol>
                 ) : (
                   NA
@@ -224,8 +224,8 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                 {brief?.glassdoor && (brief.glassdoor.rating || brief.glassdoor.summary) ? (
                   <div className="text-sm">
                     {brief.glassdoor.rating && <div className="mb-1">★ {brief.glassdoor.rating} / 5</div>}
-                    {brief.glassdoor.summary && <p className="text-ink-100">{brief.glassdoor.summary}</p>}
-                    <a href={brief.glassdoor.url} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-teal-100 hover:underline">
+                    {brief.glassdoor.summary && <p className="text-content">{brief.glassdoor.summary}</p>}
+                    <a href={brief.glassdoor.url} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-teal-300 hover:underline">
                       Open Glassdoor ↗
                     </a>
                   </div>
@@ -233,7 +233,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                   <div className="text-sm">
                     {NA}
                     {brief?.glassdoor?.url && (
-                      <a href={brief.glassdoor.url} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-teal-100 hover:underline">
+                      <a href={brief.glassdoor.url} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-teal-300 hover:underline">
                         Open Glassdoor ↗
                       </a>
                     )}
@@ -243,7 +243,7 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
 
               <Section title="Hiring process">
                 {data && data.hiring_stages.length > 0 ? (
-                  <ol className="space-y-1 pl-5 text-sm text-ink-100">
+                  <ol className="space-y-1 pl-5 text-sm text-content">
                     {data.hiring_stages.map((s, i) => (
                       <li key={i} className="list-decimal">{s}</li>
                     ))}
@@ -258,10 +258,10 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
                   <div className="space-y-3">
                     {Object.entries(topicsByCat).map(([cat, topics]) => (
                       <div key={cat}>
-                        <div className="mb-1 text-xs text-ink-300">{cat.replace(/_/g, " ")}</div>
+                        <div className="mb-1 text-xs text-muted">{cat.replace(/_/g, " ")}</div>
                         <div className="flex flex-wrap gap-1.5">
                           {topics.map((t, i) => (
-                            <span key={i} className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-xs text-ink-100">{t}</span>
+                            <span key={i} className="rounded-md border border-line/10 bg-surface px-2 py-1 text-xs text-content">{t}</span>
                           ))}
                         </div>
                       </div>
@@ -275,22 +275,22 @@ export function CompanyDrawer({ id, onClose }: { id: string | null; onClose: () 
               {brief?.linkedin && (
                 <Section title="Links">
                   <div className="flex flex-wrap gap-2 text-sm">
-                    <a href={brief.linkedin.company_url} target="_blank" rel="noopener" className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-teal-100 hover:border-teal-500">LinkedIn company ↗</a>
-                    <a href={brief.linkedin.alumni_search_url} target="_blank" rel="noopener" className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-teal-100 hover:border-teal-500">Thapar/TIET alumni ↗</a>
+                    <a href={brief.linkedin.company_url} target="_blank" rel="noopener" className="rounded-md border border-line/10 bg-surface px-2.5 py-1 text-teal-300 hover:border-teal-500">LinkedIn company ↗</a>
+                    <a href={brief.linkedin.alumni_search_url} target="_blank" rel="noopener" className="rounded-md border border-line/10 bg-surface px-2.5 py-1 text-teal-300 hover:border-teal-500">Thapar/TIET alumni ↗</a>
                     {c.website && (
-                      <a href={c.website} target="_blank" rel="noopener" className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-teal-100 hover:border-teal-500">Website ↗</a>
+                      <a href={c.website} target="_blank" rel="noopener" className="rounded-md border border-line/10 bg-surface px-2.5 py-1 text-teal-300 hover:border-teal-500">Website ↗</a>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-ink-300">Follower / alumni counts are link-outs (never scraped).</p>
+                  <p className="mt-1 text-xs text-muted">Follower / alumni counts are link-outs (never scraped).</p>
                 </Section>
               )}
             </div>
 
-            <div className="border-t border-white/10 p-4">
+            <div className="border-t border-line/10 p-4">
               <button
                 onClick={() => refresh.mutate()}
                 disabled={refresh.isPending}
-                className="rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium hover:border-teal-500 disabled:opacity-60"
+                className="rounded-lg border border-line/20 bg-surface px-4 py-2 text-sm font-medium hover:border-teal-500 disabled:opacity-60"
               >
                 {refresh.isPending ? "Researching…" : "Refresh research"}
               </button>

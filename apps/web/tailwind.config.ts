@@ -11,6 +11,13 @@ const config: Config = {
         teal: { 50: "#BCEDF2", 100: "#81CAD2", 300: "#66A2A8", 500: "#4F7F84", 700: "#375B5E", 900: "#091516" },
         olive: { 50: "#D6DD94", 100: "#AFB679", 300: "#8B905F", 500: "#6A6E48", 700: "#494C30", 900: "#0A0B05" },
         ink: { 50: "#EDEFF0", 100: "#C2C9CC", 300: "#9BA3A8", 500: "#595F61", 700: "#383B3D", 900: "#191B1C" },
+        // Theme-aware semantic tokens (flip with the .light class — see globals.css).
+        bg: "rgb(var(--bg) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        surface2: "rgb(var(--surface2) / <alpha-value>)",
+        content: "rgb(var(--content) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
       },
       fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] },
     },
